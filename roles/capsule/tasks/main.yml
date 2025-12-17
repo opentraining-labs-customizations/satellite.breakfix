@@ -76,3 +76,4 @@
     --foreman-proxy-oauth-consumer-key "{{ oauth_consumer_key }}"
     --foreman-proxy-oauth-consumer-secret "{{ oauth_consumer_secret }}"
   become: true
+

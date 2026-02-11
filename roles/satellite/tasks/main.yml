@@ -90,3 +90,28 @@
   register: delete_satellite_host
   changed_when: "'Deleted host' in delete_satellite_host.stdout"
   failed_when: false
+
+- name: Get Satellite IP
+  command: "getent hosts satellite | awk '{print $1}'"
+  register: satellite_ip
+
+- name: Get Capsule IP
+  command: "getent hosts capsule | awk '{print $1}'"
+  register: capsule_ip
+
+- name: Set Satellite IP fact
+  set_fact:
+    satellite_ip_addr: "{{ satellite_ip.stdout }}"
+
+- name: Set Capsule IP fact
+  set_fact:
+    capsule_ip_addr: "{{ capsule_ip.stdout }}"
+
+- name: Add capsule and satellite entries to /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: |
+      {{ capsule_ip_addr }}    capsule.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local capsule
+      {{ satellite_ip_addr }} satellite.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local satellite
+    state: present
+  become: true

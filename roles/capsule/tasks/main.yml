@@ -1,18 +1,29 @@
 ---
-# tasks file for satellite6.17-capsule-bfx-lab
-- name: Add capsule entry to /etc/hosts
+- name: Get Satellite IP
+  command: "getent hosts satellite | awk '{print $1}'"
+  register: satellite_ip
+
+- name: Set Satellite IP fact
+  set_fact:
+    satellite_ip_addr: "{{ satellite_ip.stdout }}"
+
+- name: Add capsule and satellite entries to /etc/hosts
   lineinfile:
     path: /etc/hosts
-    line: "10.0.2.2    capsule.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local capsule"
+    line: |
+      10.0.2.2    capsule.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local capsule
+      {{ satellite_ip_addr }} satellite.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local satellite
     state: present
   become: true
 
 - name: Remove katello-ca-consumer packages
   command: yum remove -y katello-ca-consumer*
+  become: true
 
 - name: Install new katello-ca-consumer RPM
   command: >
     rpm -Uvh http://satellite/pub/katello-ca-consumer-latest.noarch.rpm
+  become: true
 
 - name: subscription-manager clean
   command: subscription-manager clean

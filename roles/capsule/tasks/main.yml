@@ -12,7 +12,7 @@
 
 - name: Install new katello-ca-consumer RPM
   command: >
-    rpm -Uvh http://satellite.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local/pub/katello-ca-consumer-latest.noarch.rpm
+    rpm -Uvh http://satellite/pub/katello-ca-consumer-latest.noarch.rpm
 
 - name: subscription-manager clean
   command: subscription-manager clean

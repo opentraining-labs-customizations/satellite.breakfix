@@ -1,11 +1,10 @@
 ---
 # defaults file for satellite6-17-bfx
 GUID: "{{ guid }}"
-satellite_password: "{{ common_password }}"
 
 # Satellite details
 satellite_admin_user: "admin"
-satellite_admin_password: "redhat"
+satellite_admin_password: "{{ common_password }}"
 org_name: "Default Organization"
 environment: "Library"
 

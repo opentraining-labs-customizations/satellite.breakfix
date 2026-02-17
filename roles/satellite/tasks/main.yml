@@ -106,8 +106,3 @@
       {{ satellite_ip.stdout }} satellite.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local satellite
     state: present
   become: true
-
-- name: Save user data
-  agnosticd_user_info:
-    data:
-      satellite_password: "redhat"

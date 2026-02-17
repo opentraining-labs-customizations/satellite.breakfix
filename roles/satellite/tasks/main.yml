@@ -1,5 +1,14 @@
 ---
 # tasks file for satellite6-17-bfx
+- name: Configure satellite admin password
+  command: "foreman-rake permissions:reset password={{ satellite_admin_password }}"
+
+- name: Update hammer admin password in /root/.hammer/cli.modules.d/foreman.yml
+  lineinfile:
+    path: /root/.hammer/cli.modules.d/foreman.yml
+    regexp: 'password'
+    line: "  :password: '{{ satellite_admin_password }}'"
+    
 - name: Enable Satellite Capsule Repository Set
   command: >
     hammer repository-set enable

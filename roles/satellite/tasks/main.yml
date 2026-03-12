@@ -16,8 +16,8 @@
     --name "Red Hat Satellite Capsule 6.17 for RHEL 9 x86_64 (RPMs)"
     --organization "{{ org_name }}"
   register: repo_enable
-  changed_when: "'enabled' in repo_enable.stdout"
-
+  failed_when: repo_enable.rc not in [0,77]
+  
 - name: Synchronize Satellite Capsule Product
   command: >
     hammer product synchronize

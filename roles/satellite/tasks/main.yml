@@ -17,6 +17,9 @@
     --organization "{{ org_name }}"
   register: repo_enable
   failed_when: repo_enable.rc not in [0,77]
+
+- name: "refresh manifest"
+  command: "sudo hammer subscription refresh-manifest --organization "Default Organization"
   
 - name: Synchronize Satellite Capsule Product
   command: >

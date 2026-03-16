@@ -12,7 +12,7 @@
     path: /etc/hosts
     line: |
       10.0.2.2    capsule.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local capsule
-      {{ satellite_ip.stdout }} satellite.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local satellite
+      {{ satellite_ip.stdout }} {{ satellite_fqdn }} satellite
     state: present
   become: true
 
@@ -81,8 +81,8 @@
     satellite-installer --scenario capsule
     --certs-tar-file "/root/capsule.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local.tar"
     --foreman-proxy-register-in-foreman "true"
-    --foreman-proxy-foreman-base-url "https://satellite.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local"
-    --foreman-proxy-trusted-hosts "satellite.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local"
+    --foreman-proxy-foreman-base-url "https://{{ satellite_fqdn }}"
+    --foreman-proxy-trusted-hosts "{{ satellite_fqdn }}"
     --foreman-proxy-trusted-hosts "capsule.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local"
     --foreman-proxy-oauth-consumer-key "{{ oauth_consumer_key }}"
     --foreman-proxy-oauth-consumer-secret "{{ oauth_consumer_secret }}"

@@ -8,33 +8,32 @@
     path: /root/.hammer/cli.modules.d/foreman.yml
     regexp: 'password'
     line: "  :password: '{{ satellite_admin_password }}'"
-    
-- name: Enable Satellite Capsule Repository Set
+
+- name: "refresh"
+  command: sudo hammer subscription refresh-manifest --organization "Default Organization"
+
+- name: Check if capsule repo enabled
+  command: >
+    hammer repository list
+    --product "Red Hat Satellite Capsule"
+    --organization "{{ org_name }}"
+  register: repo_check
+  changed_when: false
+
+- name: Enable Capsule Repository
   command: >
     hammer repository-set enable
     --product "Red Hat Satellite Capsule"
     --name "Red Hat Satellite Capsule 6.17 for RHEL 9 x86_64 (RPMs)"
     --organization "{{ org_name }}"
-  register: repo_enable
-  failed_when: repo_enable.rc not in [0,77]
+  when: "'Capsule 6.17 for RHEL 9' not in repo_check.stdout"
 
-- name: "refresh manifest"
-  command: sudo hammer subscription refresh-manifest --organization "Default Organization"
-  
 - name: Synchronize Satellite Capsule Product
   command: >
     hammer product synchronize
     --name "Red Hat Satellite Capsule"
     --organization "{{ org_name }}"
   register: sync_output
-
-- name: Run satellite-change-hostname
-  command: >
-    satellite-change-hostname {{ satellite_fqdn }}
-    --username {{ satellite_admin_user }}
-    --password {{ satellite_admin_password }}
-    --assumeyes
-  ignore_errors: true
 
 - name: Set Satellite Hostname
   command: hostnamectl set-hostname satellite.lab.sandbox-blpw4-ocp4-cluster.svc.cluster.local
@@ -45,6 +44,10 @@
     --username {{ satellite_admin_user }}
     --password {{ satellite_admin_password }}
     --assumeyes
+  register: hostname_change
+  retries: 3
+  delay: 20
+  until: hostname_change.rc == 0
 
 - name: Clean old subscription-manager data
   command: subscription-manager clean
@@ -64,23 +67,19 @@
     --force
     --username {{ satellite_admin_user }}
     --password {{ satellite_admin_password }}
-  tags: here
 
 - name: Refresh subscription-manager
   command: subscription-manager refresh
-  tags: here
 
 - name: Show yum repolist
   command: yum repolist
   register: repolist_output
-  tags: here
 
 - name: Generate capsule certificates
   command: >
     capsule-certs-generate
     --foreman-proxy-fqdn {{ capsule_fqdn }}
     --certs-tar {{ capsule_cert_tar }}
-  tags: here
 
 - name: Fetch cert tarball from Satellite to controller
   fetch:
@@ -115,6 +114,5 @@
     path: /etc/hosts
     line: |
       {{ capsule_ip.stdout }}    capsule.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local capsule
-      {{ satellite_ip.stdout }} satellite.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local satellite
+      {{ satellite_ip.stdout }}  {{ satellite_fqdn }} satellite
     state: present
-  become: true

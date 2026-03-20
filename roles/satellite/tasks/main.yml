@@ -1,5 +1,14 @@
 ---
 # tasks file for satellite6-17-bfx
+- name: Write variables to file
+  copy:
+    dest: /tmp/output.txt
+    content: |
+      name1: {{ name1 }}
+      name2: {{ name2 }}
+      name3: {{ name3 }}
+      name4: {{ name4 }}
+      
 - name: Configure satellite admin password
   command: "foreman-rake permissions:reset password={{ satellite_admin_password }}"
 

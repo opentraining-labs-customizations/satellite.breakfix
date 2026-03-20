@@ -16,7 +16,7 @@ capsule_cert_tar: "/root/{{ capsule_fqdn }}.tar"
 satellite_fqdn: "satellite.{{ subdomain }}"
 
 
-name1: {{ subdomain_base_short }}
-name2: {{ subdomain_base_suffix }}
-name3: {{ subdomain_base }}
-name4: {{ subdomain }}
+name1: "{{ subdomain_base_short }}"
+name2: "{{ subdomain_base_suffix }}"
+name3: "{{ subdomain_base }}"
+name4: "{{ subdomain }}"

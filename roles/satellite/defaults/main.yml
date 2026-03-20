@@ -13,4 +13,4 @@ capsule_fqdn: "capsule.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local"
 capsule_cert_tar: "/root/{{ capsule_fqdn }}.tar"
 
 # Satellite FQDN
-satellite_fqdn: "satellite.{{ guid }}.apps.ocpv06.rhdp.net"
+satellite_fqdn: "satellite.{{ subdomain }}"

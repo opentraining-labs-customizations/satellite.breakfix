@@ -1,13 +1,25 @@
 ---
 # tasks file for satellite6-17-bfx
-- name: Write variables to file
-  copy:
-    dest: /tmp/output.txt
-    content: |
-      name1: {{ name1 }}
-      name2: {{ name2 }}
-      name3: {{ name3 }}
-      name4: {{ name4 }}
+- name: Get IPs from bastion
+  ansible.builtin.command: "ssh bastion getent hosts {{ item }}"
+  register: getent_output
+  loop: "{{ host_list }}"
+  changed_when: false
+
+- name: Add entries to /etc/hosts
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: ".*\\b{{ item.item }}\\b"
+    line: >-
+      {{ item.stdout.split()[0] }}
+      {{ item.item }}
+      {% if item.item == 'satellite' %}
+      satellite.{{ subdomain }}
+      {% endif %}
+    state: present
+  loop: "{{ getent_output.results }}"
+  when: item.rc == 0
       
 - name: Configure satellite admin password
   command: "foreman-rake permissions:reset password={{ satellite_admin_password }}"

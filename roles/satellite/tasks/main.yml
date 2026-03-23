@@ -1,26 +1,5 @@
 ---
 # tasks file for satellite6-17-bfx
-- name: Get IPs from bastion
-  ansible.builtin.command: "ssh bastion getent hosts {{ item }}"
-  register: getent_output
-  loop: "{{ host_list }}"
-  changed_when: false
-
-- name: Add entries to /etc/hosts
-  become: true
-  ansible.builtin.lineinfile:
-    path: /etc/hosts
-    regexp: ".*\\b{{ item.item }}\\b"
-    line: >-
-      {{ item.stdout.split()[0] }}
-      {{ item.item }}
-      {% if item.item == 'satellite' %}
-      satellite.{{ subdomain }}
-      {% endif %}
-    state: present
-  loop: "{{ getent_output.results }}"
-  when: item.rc == 0
-      
 - name: Configure satellite admin password
   command: "foreman-rake permissions:reset password={{ satellite_admin_password }}"
 
@@ -122,18 +101,24 @@
   changed_when: "'Deleted host' in delete_satellite_host.stdout"
   failed_when: false
 
-- name: Get Satellite IP
-  shell: "getent hosts satellite | awk '{print $1}'"
-  register: satellite_ip
+# tasks file for satellite6-17-bfx
+- name: Get IPs from bastion
+  ansible.builtin.command: "ssh bastion getent hosts {{ item }}"
+  register: getent_output
+  loop: "{{ host_list }}"
+  changed_when: false
 
-- name: Get Capsule IP
-  shell: "getent hosts capsule | awk '{print $1}'"
-  register: capsule_ip
-
-- name: Add capsule and satellite entries to /etc/hosts
-  lineinfile:
+- name: Add entries to /etc/hosts
+  become: true
+  ansible.builtin.lineinfile:
     path: /etc/hosts
-    line: |
-      {{ capsule_ip.stdout }}    capsule.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local capsule
-      {{ satellite_ip.stdout }}  {{ satellite_fqdn }} satellite
+    regexp: ".*\\b{{ item.item }}\\b"
+    line: >-
+      {{ item.stdout.split()[0] }}
+      {{ item.item }}
+      {% if item.item == 'satellite' %}
+      satellite.{{ subdomain }}
+      {% endif %}
     state: present
+  loop: "{{ getent_output.results }}"
+  when: item.rc == 0

@@ -118,9 +118,12 @@
       {{ item.item }}
       {% if item.item == 'satellite' %}
       satellite.{{ subdomain }}
-      {% elif item.item in ['capsule','node1','node2'] %}
-      {{ item.item }}.lab.sandbox-{{ guid }}-ocp4-cluster.svc_cluster.local
+      {% elif item.item == 'capsule' %}
+      {{ item.item }}.lab.sandbox-{{ guid }}-ocp4-cluster.svc.cluster.local
+      {% elif item.item in ['node1','node2'] %}
+      {{ item.item }}.lab.sandbox-{{ guid }}-base-infra.svc.cluster.local
       {% endif %}
     state: present
   loop: "{{ getent_output.results }}"
   when: item.rc == 0
+  

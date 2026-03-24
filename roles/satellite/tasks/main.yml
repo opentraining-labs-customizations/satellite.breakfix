@@ -101,7 +101,6 @@
   changed_when: "'Deleted host' in delete_satellite_host.stdout"
   failed_when: false
 
-# tasks file for satellite6-17-bfx
 - name: Get IPs from bastion
   ansible.builtin.command: "ssh bastion getent hosts {{ item }}"
   register: getent_output
@@ -115,15 +114,15 @@
     regexp: ".*\\b{{ item.item }}\\b"
     line: >-
       {{ item.stdout.split()[0] }}
-      {{ item.item }}
       {% if item.item == 'satellite' %}
-      satellite.{{ subdomain }}
+      satellite.{{ subdomain }} satellite
       {% elif item.item == 'capsule' %}
-      {{ item.item }}.lab.sandbox-{{ guid }}-ocp4-cluster.svc.cluster.local
+      {{ item.item }}.lab.sandbox-{{ guid }}-ocp4-cluster.svc.cluster.local {{ item.item }}
       {% elif item.item in ['node1','node2'] %}
-      {{ item.item }}.lab.sandbox-{{ guid }}-base-infra.svc.cluster.local
+      {{ item.item }}.lab.sandbox-{{ guid }}-base-infra.svc.cluster.local {{ item.item }}
+      {% else %}
+      {{ item.item }} {{ item.item }}
       {% endif %}
     state: present
   loop: "{{ getent_output.results }}"
   when: item.rc == 0
-  

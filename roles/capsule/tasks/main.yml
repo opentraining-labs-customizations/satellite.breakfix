@@ -1,36 +1,21 @@
 ---
-- name: Read /etc/hosts from Satellite
-  slurp:
-    src: /etc/hosts
-  register: hosts_file
-  delegate_to: "satellite"
-  run_once: true
+- name: Get Satellite IP
+  shell: "getent hosts satellite | awk '{print $1}'"
+  register: satellite_ip
 
-- name: Write /etc/hosts on Capsule
-  copy:
-    content: "{{ hosts_file.content | b64decode }}"
-    dest: /etc/hosts
-    owner: root
-    group: root
-    mode: '0644'
+- name: Get Capsule IP
+  shell: "getent hosts capsule | awk '{print $1}'"
+  register: capsule_ip
 
-- name: Read /etc/hosts from Capsule
-  slurp:
-    src: /etc/hosts
-  register: capsule_hosts
-
-- name: Copy /etc/hosts to node1 and node2
-  copy:
-    content: "{{ capsule_hosts.content | b64decode }}"
-    dest: /etc/hosts
-    owner: root
-    group: root
-    mode: '0644'
-  delegate_to: "{{ item }}"
-  loop:
-    - node1
-    - node2
-
+- name: Add capsule and satellite entries to /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: |
+      10.0.2.2    capsule.lab.sandbox-{{ GUID }}-ocp4-cluster.svc.cluster.local capsule
+      {{ satellite_ip.stdout }} {{ satellite_fqdn }} satellite
+    state: present
+  become: true
+  
 - name: Remove katello-ca-consumer packages
   command: yum remove -y katello-ca-consumer*
   become: true
@@ -103,3 +88,34 @@
     --foreman-proxy-oauth-consumer-secret "{{ oauth_consumer_secret }}"
   become: true
 
+- name: Read /etc/hosts from Satellite
+  slurp:
+    src: /etc/hosts
+  register: hosts_file
+  delegate_to: "satellite"
+  run_once: true
+
+- name: Write /etc/hosts on Capsule
+  copy:
+    content: "{{ hosts_file.content | b64decode }}"
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Read /etc/hosts from Capsule
+  slurp:
+    src: /etc/hosts
+  register: capsule_hosts
+
+- name: Copy /etc/hosts to node1 and node2
+  copy:
+    content: "{{ capsule_hosts.content | b64decode }}"
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: '0644'
+  delegate_to: "{{ item }}"
+  loop:
+    - node1
+    - node2

@@ -119,3 +119,16 @@
   loop:
     - node1
     - node2
+
+- name: Replace only IP for line containing capsule
+  replace:
+    path: /etc/hosts
+    regexp: '^\S+(\s+.*\scapsule(\s|$).*)$'
+    replace: '10.0.2.2\1'
+
+- name: Replace only IP for line containing satellite
+  replace:
+    path: /etc/hosts
+    regexp: '^\S+(\s+.*\ssatellite(\s|$).*)$'
+    replace: '10.0.2.2\1'
+  delegate_to: satellite

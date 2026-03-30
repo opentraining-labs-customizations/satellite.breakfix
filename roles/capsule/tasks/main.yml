@@ -211,7 +211,6 @@
   delegate_to: satellite
   become: true
 
-
 - name: Delete capsule hosts
   shell: >
     hammer host delete --id {{ item }} --organization "Default Organization"
@@ -261,8 +260,7 @@
 
 - name: Extract node2 host IDs
   set_fact:
-    node1_host_ids: >-
-
+    node2_host_ids: >-
       {{
         node2_hosts_raw.stdout_lines
         | select('match', '^[0-9]+')

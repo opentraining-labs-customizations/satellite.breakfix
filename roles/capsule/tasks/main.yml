@@ -139,6 +139,20 @@
   delegate_to: node1
   become: true
 
+- name: Replace only IP for line containing node1
+  replace:
+    path: /etc/hosts
+    regexp: '^\S+(\s+.*\snode1(\s|$).*)$'
+    replace: '10.0.2.2\1'
+  delegate_to: node1
+
+- name: Replace only IP for line containing node2
+  replace:
+    path: /etc/hosts
+    regexp: '^\S+(\s+.*\snode2(\s|$).*)$'
+    replace: '10.0.2.2\1'
+  delegate_to: node2
+
 - name: Set hostname on node2
   ansible.builtin.hostname:
     name: "node2.lab.sandbox-{{ GUID }}-base-infra.svc.cluster.local"

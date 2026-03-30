@@ -139,22 +139,53 @@
   delegate_to: node1
   become: true
 
-- name: Replace only IP for line containing node1
-  replace:
-    path: /etc/hosts
-    regexp: '^\S+(\s+.*\snode1(\s|$).*)$'
-    replace: '10.0.2.2\1'
-  delegate_to: node1
-
-- name: Replace only IP for line containing node2
-  replace:
-    path: /etc/hosts
-    regexp: '^\S+(\s+.*\snode2(\s|$).*)$'
-    replace: '10.0.2.2\1'
-  delegate_to: node2
-
 - name: Set hostname on node2
   ansible.builtin.hostname:
     name: "node2.lab.sandbox-{{ GUID }}-base-infra.svc.cluster.local"
   delegate_to: node2
+  become: true
+
+- name: Remove katello-ca-consumer packages
+  command: yum remove -y katello-ca-consumer*
+  delegate_to: "{{ item }}"
+  loop:
+    - node1
+    - node2
+  become: true
+
+- name: Install new katello-ca-consumer RPM
+  command: >
+    rpm -Uvh http://satellite/pub/katello-ca-consumer-latest.noarch.rpm
+  delegate_to: "{{ item }}"
+  loop:
+    - node1
+    - node2
+  become: true
+
+- name: subscription-manager clean
+  command: subscription-manager clean
+  delegate_to: "{{ item }}"
+  loop:
+    - node1
+    - node2
+  become: true
+  
+- name: Register system to Satellite
+  command: >
+    subscription-manager register
+    --force
+    --username {{ satellite_admin_user }}
+    --password {{ satellite_admin_password }}
+  delegate_to: "{{ item }}"
+  loop:
+    - node1
+    - node2
+  become: true
+
+- name: subscription-manager refresh
+  command: subscription-manager refresh
+  delegate_to: "{{ item }}"
+  loop:
+    - node1
+    - node2
   become: true

@@ -189,3 +189,95 @@
     - node1
     - node2
   become: true
+
+- name: Get capsule hosts (table format)
+  shell: >
+    hammer host list --organization "Default Organization"
+    --search "name ~ capsule.{{ GUID }}.internal"
+    --fields Id,Name
+  register: capsule_hosts_raw
+  delegate_to: satellite
+  become: true
+
+- name: Extract capsule host IDs
+  set_fact:
+    capsule_host_ids: >-
+      {{
+        capsule_hosts_raw.stdout_lines
+        | select('match', '^[0-9]+')
+        | map('regex_replace', '^([0-9]+).*', '\1')
+        | list
+      }}
+  delegate_to: satellite
+  become: true
+
+
+- name: Delete capsule hosts
+  shell: >
+    hammer host delete --id {{ item }} --organization "Default Organization"
+  loop: "{{ capsule_host_ids }}"
+  delegate_to: satellite
+  become: true
+
+- name: Get node1 hosts
+  shell: >
+    hammer host list --organization "Default Organization"
+    --search "name ~ node1.{{ GUID }}.internal"
+    --fields Id,Name
+  register: node1_hosts_raw
+  delegate_to: satellite
+  become: true
+
+- name: Extract node1 host IDs
+  set_fact:
+    node1_host_ids: >-
+      {{
+        node1_hosts_raw.stdout_lines
+        | select('match', '^[0-9]+')
+        | map('regex_replace', '^([0-9]+).*', '\1')
+        | list
+      }}
+  delegate_to: satellite
+  become: true
+
+- name: Rename node1 hosts
+  shell: >
+    hammer host update
+    --id {{ item }}
+    --name node1.lab.sandbox-{{ GUID }}-base-infra.svc.cluster.local
+    --organization "Default Organization"
+  loop: "{{ node1_host_ids }}"
+  delegate_to: satellite
+  become: true
+
+- name: Get node2 hosts
+  shell: >
+    hammer host list --organization "Default Organization"
+    --search "name ~ node2.{{ GUID }}.internal"
+    --fields Id,Name
+  register: node2_hosts_raw
+  delegate_to: satellite
+  become: true
+
+- name: Extract node2 host IDs
+  set_fact:
+    node1_host_ids: >-
+
+      {{
+        node2_hosts_raw.stdout_lines
+        | select('match', '^[0-9]+')
+        | map('regex_replace', '^([0-9]+).*', '\1')
+        | list
+      }}
+  delegate_to: satellite
+  become: true
+
+- name: Rename node2 hosts
+  shell: >
+    hammer host update
+    --id {{ item }}
+    --name node2.lab.sandbox-{{ GUID }}-base-infra.svc.cluster.local
+    --organization "Default Organization"
+  loop: "{{ node2_host_ids }}"
+  delegate_to: satellite
+  become: true

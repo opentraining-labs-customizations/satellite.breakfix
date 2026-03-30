@@ -132,3 +132,15 @@
     regexp: '^\S+(\s+.*\ssatellite(\s|$).*)$'
     replace: '10.0.2.2\1'
   delegate_to: satellite
+
+- name: Set hostname on node1
+  ansible.builtin.hostname:
+    name: "node1.lab.sandbox-{{ GUID }}-base-infra.svc.cluster.local"
+  delegate_to: node1
+  become: true
+
+- name: Set hostname on node2
+  ansible.builtin.hostname:
+    name: "node2.lab.sandbox-{{ GUID }}-base-infra.svc.cluster.local"
+  delegate_to: node2
+  become: true

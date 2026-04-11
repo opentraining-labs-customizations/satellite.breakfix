@@ -1,7 +1,0 @@
----
-# defaults file for bastion
-host_list:
-  - satellite
-  - capsule
-  - node1
-  - node2

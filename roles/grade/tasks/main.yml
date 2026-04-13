@@ -1,10 +1,18 @@
 ---
+- name: Install ansible package on bastion host
+  become: true
+  dnf:
+    name: "ansible"
+  delegate_to: "bastion"
+  
 - name: Clone the repo and copy lab script
   ansible.builtin.command: "{{ item }}"
   loop:
     - sudo git clone https://github.com/opentraining-labs-customizations/satellite-bfx-6.17-labs.git /opt/satellite-bfx-6.17-labs/
     - sudo cp /opt/satellite-bfx-6.17-labs/lab /usr/local/bin/
     - sudo chmod +x /usr/local/bin/lab
-
+  delegate_to: "bastion"
+  
 - name: Install the ansible-galaxy collection
   ansible.builtin.command: "sudo ansible-galaxy collection install -r /opt/satellite-bfx-6.17-labs/requirements.yml -p /usr/share/ansible/collections/"
+  delegate_to: "bastion"

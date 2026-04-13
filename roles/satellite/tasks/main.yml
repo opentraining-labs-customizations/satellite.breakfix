@@ -126,9 +126,3 @@
     state: present
   loop: "{{ getent_output.results }}"
   when: item.rc == 0
-
-- name: Install ansible package on bastion host
-  become: true
-  dnf:
-    name: "ansible"
-  delegate_to: "bastion"
